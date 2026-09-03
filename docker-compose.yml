@@ -31,13 +31,8 @@ services:
       dockerfile: Dockerfile
 
     image: brazil-energy-airflow:local
-
     container_name: brazil-energy-airflow
 
-    depends_on:
-      postgres:
-        condition: service_healthy
-    
     env_file:
       - .env
 
@@ -46,6 +41,10 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       POSTGRES_HOST: postgres
 
+    depends_on:
+      postgres:
+        condition: service_healthy
+
     ports:
       - "8080:8080"
 
@@ -53,9 +52,37 @@ services:
       - ./dags:/opt/airflow/dags
       - ./src:/opt/airflow/src
       - ./data:/opt/airflow/data
+      - airflow_home:/opt/airflow
 
     command: standalone
 
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+
+    container_name: brazil-energy-api
+
+    env_file:
+      - .env
+
+    environment:
+      POSTGRES_HOST: postgres
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./src:/opt/airflow/src
+      - ./data:/opt/airflow/data
+
 volumes:
   postgres_data:
+  airflow_home:
 
